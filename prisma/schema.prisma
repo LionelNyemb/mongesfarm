@@ -1,0 +1,417 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum categorieDeDepense {
+  fixe
+  courante
+  occasionnelle
+}
+
+enum referent {
+  bande
+  ouvrier
+  fournisseur
+  veterinaire
+  materiel
+  nutrition
+  eau
+}
+
+enum categorieOeuf {
+  oeuf_feconder
+  oeuf_non_feconder
+}
+
+enum typeIncubation {
+  naturelle
+  artificielle
+}
+
+enum statutVaccin {
+  Planifier
+}
+
+enum typePerte {
+  bande
+  oeuf
+  materiel
+  aliment
+  batiment
+}
+
+model Utilisateur {
+  id         String   @id @default(uuid())
+  nom        String   @unique
+  phone      Int      @unique
+  motDePasse String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Bande {
+  id                     String                   @id @default(uuid())
+  batiment               Batiment                 @relation(fields: [batimentId], references: [code])
+  batimentId             String
+  type                   String                   @unique
+  effectif               Int
+  unite                  String?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  ramassageOeuf          RamassageOeuf[]
+  typePerteB             TypePerteB[]
+  vaccination            Vaccination[]
+  venteBande             VenteBande[]
+  veterinaireObservation VeterinaireObservation[]
+  veterinaire            Veterinaire[]
+}
+
+model EntrerBande {
+  id                     String                   @id @default(uuid())
+  batiment               Batiment                 @relation(fields: [batimentId], references: [code])
+  batimentId             String
+  type                   String                   
+  effectif               Int
+  unite                  String?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+}
+
+model Batiment {
+  id                       String                    @id @default(uuid())
+  code                     String                    @unique
+  designation              String
+  capacite                 Int
+  unite                    String?
+  longueur                 String
+  largeur                  String
+  hauteur                  String
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  bande                    Bande[]
+  EntrerBande              EntrerBande[]
+  materiel                 Materiel[]
+  entrerMateriel           EntrerMateriel[]
+  entrerNutrition          EntrerNutrition[]
+  nutrition                Nutrition[]
+  ponte                    Ponte[]
+  typePerte                TypePerteT[]
+  observationFecondite     ObservationFecondite[]
+  sortieMateriel           SortieMateriel[]
+  ramassageOeuf            RamassageOeuf[]
+  veterinaireObservation   VeterinaireObservation[]
+  sortieNutrition          SortieNutrition[]
+}
+
+model Client {
+  id        String       @id @default(uuid())
+  nom       String       @unique
+  ville     String
+  phone     Int          @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  venteBande VenteBande[]
+  ventePonte VentePonte[]
+}
+
+model Depense {
+  id              String                @id @default(uuid())
+  referent        String
+  categorie       String
+  quantite        Int
+  unite           String?
+  prixUnitaire    Int
+  unite1          String?
+  montant         Int
+  description     String
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+}
+
+model Eau {
+  id        String             @id @default(uuid())
+  ouvrier   Ouvrier            @relation(fields: [ouvrierId], references: [nom])
+  ouvrierId String
+  quantite  Int
+  unite     String?
+  note      String
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+model EntrerNutrition {
+  id             String   @id @default(uuid())
+  batiment       Batiment @relation(fields: [batimentId], references: [code])
+  batimentId     String
+  aliment        String
+  apportNutritif String
+  quantite       Int
+  unite          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model EntrerMateriel {
+  id          String   @id @default(uuid())
+  batiment    Batiment @relation(fields: [batimentId], references: [code])
+  batimentId  String
+  designation String
+  quantite    Int
+  unite       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Fournisseur {
+  id        String   @id @default(uuid())
+  nom       String   @unique
+  ville     String
+  phone     Int      @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Materiel {
+  id          String   @id @default(uuid())
+  batiment    Batiment @relation(fields: [batimentId], references: [code])
+  batimentId  String
+  designation String   @unique
+  quantite    Int
+  unite       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  typePerte   TypePerteM[]
+}
+
+model TypePerteB {
+  id            String      @id    @default(uuid())
+  ref           String   
+  bande         Bande       @relation(fields: [typeP], references: [type])
+  typeP         String
+  effectif      Int
+  unite         String?
+  description   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+model TypePerteP {
+  id            String          @id    @default(uuid())
+  ref           String       
+  ponte         Ponte           @relation(fields: [typeP], references: [oeuf])
+  typeP         String
+  effectif      Int
+  unite         String?
+  description   String
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+model TypePerteT {
+  id            String       @id    @default(uuid())
+  ref           String    
+  batiment      Batiment     @relation(fields: [typeP], references: [code])
+  typeP         String
+  effectif      Int
+  unite         String?
+  description   String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+model TypePerteN {
+  id            String       @id    @default(uuid())
+  ref           String    
+  nutrition     Nutrition    @relation(fields: [typeP], references: [aliment])
+  typeP         String
+  effectif      Int
+  unite         String?
+  description   String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+model TypePerteM {
+  id            String      @id    @default(uuid())
+  ref           String   
+  materiel      Materiel    @relation(fields: [typeP], references: [designation])
+  typeP         String
+  effectif      Int
+  unite         String?
+  description   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Nutrition {
+  id             String   @id @default(uuid())
+  batiment       Batiment @relation(fields: [batimentId], references: [code])
+  batimentId     String
+  aliment        String   @unique
+  apportNutritif String
+  quantite       Int
+  unite          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  typePerte      TypePerteN[]
+}
+
+model Ouvrier {
+  id              String            @id @default(uuid())
+  nom             String            @unique
+  fonction        String
+  ville           String
+  phone           Int               @unique
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  eau             Eau[]
+  sortieNutrition SortieNutrition[]
+  sortieMateriel  SortieMateriel[]
+  ramassageOeuf   RamassageOeuf[]
+}
+
+model Ponte {
+  id          String   @id   @default(uuid())
+  batiment    Batiment @relation(fields: [batimentId], references: [code])
+  batimentId  String
+  oeuf        String   @unique
+  quantite    Int
+  unite       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  typePerte   TypePerteP[]
+}
+
+model ObservationFecondite {
+  id             String   @id @default(uuid())
+  batiment       Batiment @relation(fields: [batimentId], references: [code])
+  batimentId     String
+  remarque       String
+  quantite       Int
+  unite          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model RamassageOeuf {
+  id           String      @id @default(uuid())
+  ouvrier      Ouvrier     @relation(fields: [ouvrierId], references: [nom])
+  ouvrierId    String
+  bande        Bande       @relation(fields: [bandeId], references: [type])
+  bandeId      String
+  batiment     Batiment    @relation(fields: [batimentId], references: [code])
+  batimentId   String
+  gros         Int     
+  moyen        Int      
+  unite        String?      
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model SortieNutrition {
+  id           String    @id @default(uuid())
+  ouvrier      Ouvrier   @relation(fields: [ouvrierId], references: [nom])
+  batiment     Batiment  @relation(fields: [batimentId], references: [code])
+  ouvrierId    String
+  batimentId   String
+  aliment      String
+  quantite     Int
+  unite        String?
+  note         String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model SortieMateriel {
+  id              String     @id @default(uuid())
+  ouvrier         Ouvrier    @relation(fields: [ouvrierId], references: [nom])
+  ouvrierId       String
+  batiment        Batiment   @relation(fields: [batimentId], references: [code])
+  batimentId      String
+  designation     String
+  quantite        Int
+  unite           String?
+  note            String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model Vaccination {
+  id              String   @id @default(uuid())
+  bande           Bande  @relation(fields: [bandeId], references: [type])
+  bandeId         String
+  vaccin          String
+  periode         String
+  periode1        String
+  indication      String
+  posologie       String
+  statut          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model VenteBande {
+  id             String   @id @default(uuid())
+  client         Client    @relation(fields: [clientId], references: [nom])
+  clientId       String
+  bande          Bande    @relation(fields: [bandeId], references: [type])
+  bandeId        String
+  quantite       Int
+  unite          String?
+  prixUnitaire   Int
+  unite1         String?
+  montant        Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model VentePonte {
+  id           String        @id @default(uuid())
+  client       Client    @relation(fields: [clientId], references: [nom])
+  clientId     String
+  categorie    String
+  quantite     Int
+  unite        String?
+  prixUnitaire Int       
+  unite1       String?       
+  montant      Int       
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model VeterinaireObservation {
+  id           String   @id @default(uuid())
+  bande        Bande    @relation(fields: [bandeId], references: [type])
+  bandeId      String
+  batiment     Batiment    @relation(fields: [batimentId], references: [code])
+  batimentId   String
+  observation1 String
+  observation2 String
+  observation3 String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Veterinaire {
+  id          String   @id @default(uuid())
+  bande       Bande    @relation(fields: [bandeId], references: [type])
+  bandeId     String
+  veterinaire String   @unique
+  traitement  String
+  posologie   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UniteCapacite {
+  id         String      @id @default(uuid())
+  forme      String?     
+  unite      String?     
+  monait     String?     
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
